@@ -1,10 +1,10 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<ctype.h>
-#include<conio.h>
-#include<windows.h>
-#include<time.h>
-#include<string.h>
+#include<stdio.h>//printf,scanf
+#include<stdlib.h>//system
+#include<ctype.h>//toupper
+#include<conio.h>//kbht;getch
+#include<windows.h>//mgotoxy
+#include<time.h>//srand(time(null))
+#include<string.h>//strcpy
 
 #define ALTURA 50
 #define LARGURA 80
@@ -25,6 +25,7 @@ typedef struct InfoSave{
 }save;
 
 void menu1P();
+void menu2P();
 void jogo1P();
 void jogo2P();
 void mgotoxy(int x,int y);
@@ -55,7 +56,7 @@ int main(){
 		if(Aux==1){
 			menu1P();
 		}else if(Aux==2){
-			jogo2P();
+			menu2P();
 		}
 		
 		
@@ -97,11 +98,46 @@ void menu1P(){
 
 
 
+void menu2P(){
+	int Aux=0;
+	do{
+		system("cls");
+		printf("1:Jogar\n");
+		printf("2:Pontuacoes\n");
+		printf("3:Menu principal\n");
+		printf("4:Sair\n");	
+		scanf("%d",&Aux);
+		fflush(stdin);
+	}while(Aux!=1 && Aux!=2 && Aux!=3 && Aux!=4);
+	
+	if(Aux==1){
+		system("cls");
+		printf("Aperte WASD para mover a primeira cobra e IJKL para mover a segunda cobra\n");
+		printf("Coma e cresca!!\n");
+		printf("Bater em si mesmo ou no inimigo resulta em morte!\n");
+		printf("As paredes levam ao lado oposto do mapa\n");
+		printf("Derrote o outro jogador fazendo bater nele mesmo ou em voce");
+		
+		getch();
+		jogo2P();
+	}else if(Aux==2){
+		mostraPontuacoes();
+	}else if(Aux==3) main();
+	else exit(1);
+	
+	
+	
+	
+	
+}
+
+
+
 void jogo1P(){
 	snake *Cobra;
 	int Perdeu=0;
 	int PComida[2];
-	char Tmp='�';
+	char Tmp='ç';
 	int Dif;
 	
 	do{
@@ -117,7 +153,7 @@ void jogo1P(){
 	else if(Tmp=='D') Dif=30;
 	else Dif=10;
 	
-	Tmp='�';
+	Tmp='ç';
 	
 	
 	
@@ -135,6 +171,8 @@ void jogo1P(){
 	geraComida(PComida);
 	mgotoxy(1,1);
 	
+	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
+	//					Loop que roda o jogo								//
 	while(!Perdeu){
 		
 		while(!kbhit() && !Perdeu){
@@ -144,12 +182,12 @@ void jogo1P(){
 			if(Cobra->Pos[0]==0 || Cobra->Pos[0]==LARGURA || Cobra->Pos[1]==0 || Cobra->Pos[1]==ALTURA) Perdeu=1;
 			
 			if(checaComida(Cobra,PComida)) Cobra->Tam++;//checa se tem comida, se tiver aumenta Tam
-			while(colisao(PComida,Cobra)) geraComida(PComida);//enquanto a comida "nascer" numa posi�ao q o corpo ja ocupa, ela vai nascer em outro lugar
+			while(colisao(PComida,Cobra)) geraComida(PComida);//enquanto a comida "nascer" numa posiçao q o corpo ja ocupa, ela vai nascer em outro lugar
 			
 			Sleep(Dif);
 			
 			mgotoxy(0,ALTURA+3);
-			printf("Tam: %d // %d      ",Cobra->Pos[0],Cobra->Pos[1]);
+			printf("Tam: %d    ",Cobra->Tam);
 			
 		}
 		Tmp=getch();
@@ -159,10 +197,9 @@ void jogo1P(){
 		
 		
 	}
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 	
-	
-
-	salvaPontuacao(Cobra->Tam,Dif);
+	salvaPontuacao(Cobra->Tam,Dif);//salva a potuação do jogo e a dificuldade
 
 	free(Cobra);
 }
@@ -195,6 +232,8 @@ void jogo2P(){
 	geraComida(PComida);
 	mgotoxy(1,1);
 	
+	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
+	//					Loop que roda o jogo								//
 	while(!Perdeu){
 		
 		while(!kbhit() && !Perdeu){
@@ -205,19 +244,21 @@ void jogo2P(){
 			
 			rastro(Cobra);
 			movimenta(Cobra);
-			if(Cobra->Pos[0]==LARGURA) Cobra->Pos[0]=1;
-			if(Cobra->Pos[0]==0) Cobra->Pos[0]=LARGURA-1;
-			if(Cobra->Pos[1]==ALTURA) Cobra->Pos[1]=1;
-			if(Cobra->Pos[1]==0) Cobra->Pos[1]=ALTURA-1;
+			if(Cobra->Pos[0]==LARGURA) Cobra->Pos[0]=1;		//quando cobra chega na parede direita ela vai pra parede esquerda
+			if(Cobra->Pos[0]==0) Cobra->Pos[0]=LARGURA-1;	//quando cobra chega na parede esquerda ela vai pra parede direita
+			if(Cobra->Pos[1]==ALTURA) Cobra->Pos[1]=1;		// quando cobra chega na parede de baixo ela vai pra parede de cima
+			if(Cobra->Pos[1]==0) Cobra->Pos[1]=ALTURA-1;	// quando cobra chega na parede de cima ela vai pra parede de baixo
 			
 			Perdeu=colisao(Cobra->Pos,Cobra);//checa se a primeira cobra nao bateu em si mesma
 			if(Perdeu) break;
 			Perdeu=colisao(Cobra->Pos,Cobra2);//checa se a primeira cobra bateu no rabo da segunda
 			if(Perdeu) break;
 			
-			if(checaComida(Cobra,PComida)) Cobra->Tam++;
-			while(colisao(PComida,Cobra) || colisao(PComida,Cobra2) ) geraComida(PComida);//enquanto a comida "nascer" numa posi�ao q o corpo de alguma das duas cobras ja ocupa, ela vai nascer em outro lugar
-			//-----------------------------------------------------------------//	
+			if(checaComida(Cobra,PComida)) Cobra->Tam++; //checa se na posição atual tem comida, se tiver aumenta tamanho e gera nova comida
+			while(colisao(PComida,Cobra) || colisao(PComida,Cobra2) ) geraComida(PComida);//enquanto a comida "nascer" numa posiçao q o corpo de alguma das duas cobras ja ocupa, ela vai nascer em outro lugar
+			
+			//-----------------------pra segunda cobra abaixo---------------------------------------//	
+			
 			if(Cobra->Pos[0]==Cobra2->Pos[0] && Cobra->Pos[1]==Cobra2->Pos[1]){// checa se um nao bateu de cabeca com o outro;
 				Perdeu=3;
 				break;
@@ -225,10 +266,10 @@ void jogo2P(){
 					
 			rastro(Cobra2);
 			movimenta(Cobra2);
-			if(Cobra2->Pos[0]==LARGURA) Cobra2->Pos[0]=1;
-			if(Cobra2->Pos[0]==0) Cobra2->Pos[0]=LARGURA-1;
-			if(Cobra2->Pos[1]==ALTURA) Cobra2->Pos[1]=1;
-			if(Cobra2->Pos[1]==0) Cobra2->Pos[1]=ALTURA-1;
+			if(Cobra2->Pos[0]==LARGURA) Cobra2->Pos[0]=1;  //quando cobra chega na parede direita ela vai pra parede esquerda
+			if(Cobra2->Pos[0]==0) Cobra2->Pos[0]=LARGURA-1; //quando cobra chega na parede esquerda ela vai pra parede direita
+			if(Cobra2->Pos[1]==ALTURA) Cobra2->Pos[1]=1;	// quando cobra chega na parede de baixo ela vai pra parede de cima
+			if(Cobra2->Pos[1]==0) Cobra2->Pos[1]=ALTURA-1;	// quando cobra chega na parede de cima ela vai pra parede de baixo
 			
 			Perdeu=colisao(Cobra2->Pos,Cobra2);// checa se a segunda cobra nao bateu em si mesma
 			if(Perdeu){
@@ -241,8 +282,8 @@ void jogo2P(){
 				break;
 			}
 			
-			if(checaComida(Cobra2,PComida)) Cobra2->Tam++;
-			while(colisao(PComida,Cobra) || colisao(PComida,Cobra2) ) geraComida(PComida);//enquanto a comida "nascer" numa posi�ao q o corpo de alguma das duas cobras ja ocupa, ela vai nascer em outro lugar
+			if(checaComida(Cobra2,PComida)) Cobra2->Tam++; ////checa se na posição atual tem comida, se tiver aumenta tamanho e gera nova comida
+			while(colisao(PComida,Cobra) || colisao(PComida,Cobra2) ) geraComida(PComida);//enquanto a comida "nascer" numa posiçao q o corpo de alguma das duas cobras ja ocupa, ela vai nascer em outro lugar
 			
 			Sleep(100);
 			
@@ -250,11 +291,13 @@ void jogo2P(){
 			printf("Tam: %d    Tam2: %d      ",Cobra->Tam,Cobra2->Tam);
 			
 		}		
+		//entra aqui quando uma tecla for pressionada
 		Tmp=getch();
+		//pra primeira cobra só precisa pegar a direção com WASD
 		if(Tmp=='w' || Tmp=='a' || Tmp=='s' || Tmp=='d'){
 			Cobra->Direcao=Tmp;
 		}
-		
+		//pra segunda cobra precisa "converter" o IJKL pras WASD (pra poder usar a mesma função de movimentação)
 		if(Tmp=='i') Cobra2->Direcao='w';
 		else if(Tmp=='j') Cobra2->Direcao='a';
 		else if(Tmp=='k') Cobra2->Direcao='s';
@@ -262,6 +305,7 @@ void jogo2P(){
 		
 		
 	}
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=Entra aqui quando alguem perde-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
 	
 	system("cls");
 	if(Perdeu==1){
@@ -316,8 +360,9 @@ void imprimeMapa(){
 
 void movimenta(snake *Cobra){
 	
-//	mgotoxy(Pos[0],Pos[1]);
-//	printf(" ");
+		//Altera posições confrome a direção
+		//vai pra nova posição 
+		// printa a "cabeça" da cobra nela
 	
 		if (Cobra->Direcao=='a') {
 			Cobra->Pos[0]=Cobra->Pos[0]-1; //anda pra esquerda
@@ -348,23 +393,23 @@ void rastro(snake *Cobra){
 	int i;
 	
 	//apaga ultimo rastro
-	if(Cobra->RastroX[Cobra->Tam-1]!=0 && Cobra->RastroY[Cobra->Tam-1]!=0){// quando come a ultima posi��o � q 0,0 isso impede q apague um peda�o do mapa
+	if(Cobra->RastroX[Cobra->Tam-1]!=0 && Cobra->RastroY[Cobra->Tam-1]!=0){ // quando tamanho aumenta a ultima posição posição passa a ser [0,0](uma parte do mapa) isso impede q apague um pedaço do mapa
 		mgotoxy(Cobra->RastroX[Cobra->Tam-1],Cobra->RastroY[Cobra->Tam-1]);
 		printf(" ");
 	}
 	
 	
-	//move as posi��es dos rastros
+	//move as posições dos rastros
 	for(i=Cobra->Tam-1;i>0;i--){
 		Cobra->RastroX[i]=Cobra->RastroX[i-1];
 		Cobra->RastroY[i]=Cobra->RastroY[i-1];
 	}
 	
-	//Rastro recebe a posi��o atual
+	//Rastro recebe a posição atual
 	Cobra->RastroX[0]=Cobra->Pos[0];
 	Cobra->RastroY[0]=Cobra->Pos[1];
 	
-	//Coloca um X na posi��o atual,  Logo em seguida no "jogo" ele vai pra proxima posi��o (na mesma itera��o do while
+	//Coloca um X na posição atual,  Logo em seguida no "jogo" ele vai pra proxima posição (na mesma iteração do while
 	mgotoxy(Cobra->RastroX[0],Cobra->RastroY[0]);
 	printf("X");
 
@@ -379,17 +424,19 @@ void geraComida(int PComida[]){
 	srand(time(NULL));
 	
 	
-	PComida[0]=rand()%LARGURA-1;
+	PComida[0]=rand()%LARGURA-1;  //o -1 é pra nao spawnar nas paredes direita ou em baixo
 	PComida[1]=rand()%ALTURA-1;
 	
-	if(PComida[0]<=0) PComida[0]=1;
+	
+	if(PComida[0]<=0) PComida[0]=1;	  //serve pra nao spawnar nas paredes da esquerda ou de cima
 	if(PComida[1]<=0) PComida[1]=1;
 	
-	mgotoxy(PComida[0],PComida[1]);
-	printf("@");	
+	mgotoxy(PComida[0],PComida[1]);  //vai pra nova posição
+	printf("@");	//printa comida no mapa
 }
 
 int checaComida(snake *Cobra,int PComida[]){
+	//se a posição da cabeça da cobra for a mesma que da comida então retorna 1
 	if(Cobra->Pos[0]==PComida[0] && Cobra->Pos[1]==PComida[1]){
 		geraComida(PComida);
 		return 1;
@@ -459,14 +506,14 @@ void mostraPontuacoes(){
 	FILE *Arq;
 	Arq=fopen("pontuacao","r");//abre arquivo pra leitura
 	if(Arq==NULL){
-		printf("N�o hq nenhuma pontuacao salva");//se nao tiver arquivo � pq ainda nao tem nenhum save
+		printf("Não hq nenhuma pontuacao salva");//se nao tiver arquivo é pq ainda nao tem nenhum save
 		getch();
 	}else{
 		printf("Pontuacoes");
 		printf("\n");
 		
 		fread(&Info,sizeof(save),1,Arq);
-		while(!feof(Arq)){//enquanto nao for o fim do arquivo, ele le as novas informa��es e printa elas, entao l� novamente
+		while(!feof(Arq)){//enquanto nao for o fim do arquivo, ele le as novas informações e printa elas, entao lê novamente
 			printf("\nDificuldade: %c \nNome: %sPontuacao: %d",Info.Dif,Info.Nome,Info.Pontuacao);
 			printf("\n");
 			fread(&Info,sizeof(save),1,Arq);
@@ -477,8 +524,3 @@ void mostraPontuacoes(){
 	fclose(Arq);
 	
 }
-
-
-
-
-
